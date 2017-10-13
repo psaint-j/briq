@@ -1,4 +1,5 @@
 const { sequelize } = require('./index');
+const _ = require('lodash');
 
 module.exports = (sequelize, DataTypes) => {
 
@@ -19,12 +20,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  User.prototype.give = function (amount, userTo) {
-    return Promise.all([
-      () => this.createDebit({ amount, userToId: userTo.id }),
-      () => this.decrement('balance', amount),
-      () => userTo.increment('balance', amount)
-    ]);
+  User.prototype.give = function (amount, userTo, options = {}) {
+    const tx = _.defaults({ amount, userToId: userTo.id }, options);
+    return this.createDebit(tx)
+      .then(() => this.decrement({ balance: amount }))
+      .then(() => userTo.increment({ balance: amount }));
   };
 
   User.associate = function (models) {

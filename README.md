@@ -40,7 +40,7 @@ Keep it simple ;-)
 We now want to compute aggregated stats on user's behaviours. Run `npm run populate` to populate your database with random data.
 Then write the following SQL queries:
 
-- All non-deleted users with their id, username, balance, the date at which they received Briqs for the last time, the date at which they gave Briqs for the last time
+- All users with their id, username, balance, the date at which they received Briqs for the last time, the date at which they gave Briqs for the last time
 - All users (including deleted ones) with their id, username, balance, the number of Briqs they received and the number of Briqs they gave.
 - All users (id, username) that gave Briqs in the last 2 days
 - All users (id, username) that gave more than 5 Briqs in one transaction, and the highest number of Briqs they gave

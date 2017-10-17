@@ -57,7 +57,7 @@ const createTransactions = (users, days, transactionsPerDay) => {
 
       // store meta
       userFrom.meta.highestAmount = Math.max(userFrom.meta.highestAmount, amount);
-      userFrom.meta.lastGive = userTo.meta.lastGive || day.toDate();
+      userFrom.meta.lastGive = userFrom.meta.lastGive || day.toDate();
       userFrom.meta.totalGiven += amount;
 
       userTo.meta.lastReceive = userTo.meta.lastReceive || day.toDate();

@@ -1,9 +1,9 @@
-const { user: User, transaction: Transaction } = require('../models');
-const moment = require('moment')
+const moment = require('moment');
 const Moniker = require('moniker');
 const Promise = require('bluebird');
 const csv = Promise.promisifyAll(require('csv'));
 const fs = Promise.promisifyAll(require('fs'));
+const { user: User } = require('../models');
 
 const generateUsers = (number) => {
   const createUsers = [];
@@ -13,13 +13,13 @@ const generateUsers = (number) => {
     createUsers.push(User.create({ username, balance }));
   }
   return Promise.all(createUsers);
-}
+};
 
-randomUserFrom = (users) => {
+const randomUserFrom = (users) => {
   const userIds = Object.keys(users);
   let user;
 
-  while (user == null || user.user.balance == 0) {
+  while (user == null || user.user.balance === 0) {
     const userId = userIds[Math.trunc(Math.random() * userIds.length)];
     user = users[userId];
   }
@@ -28,11 +28,11 @@ randomUserFrom = (users) => {
 };
 
 
-randomUserTo = (users, userFrom) => {
+const randomUserTo = (users, userFrom) => {
   const userIds = Object.keys(users);
   let user;
 
-  while (user == null || user.user.id == userFrom.id) {
+  while (user == null || user.user.id === userFrom.id) {
     const userId = userIds[Math.trunc(Math.random() * userIds.length)];
     user = users[userId];
   }
@@ -41,8 +41,7 @@ randomUserTo = (users, userFrom) => {
 };
 
 const createTransactions = (users, days, transactionsPerDay) => {
-
-  const createTransactions = [];
+  const createTransactionsPromises = [];
   const day = moment();
 
   for (let d = 0; d < days; d++) {
@@ -53,7 +52,8 @@ const createTransactions = (users, days, transactionsPerDay) => {
       const userTo = randomUserTo(users, userFrom.user);
       const amount = Math.min(userFrom.user.balance, 1 + Math.trunc(Math.random() * 10));
 
-      createTransactions.push(userFrom.user.give(amount, userTo.user, { createdAt: day.toDate() }));
+      const give = userFrom.user.give(amount, userTo.user, { createdAt: day.toDate() });
+      createTransactionsPromises.push(give);
 
       // store meta
       userFrom.meta.highestAmount = Math.max(userFrom.meta.highestAmount, amount);
@@ -64,23 +64,22 @@ const createTransactions = (users, days, transactionsPerDay) => {
       userTo.meta.totalReceived += amount;
     }
   }
-  return Promise.all(createTransactions);
-}
+  return Promise.all(createTransactionsPromises);
+};
 
-const writeCsv = (fileName, data) => {
-  return csv.stringifyAsync(data, { header: true })
-    .then(txt => fs.writeFileAsync(__dirname + '/' + fileName, txt));
-}
+const writeCsv = (fileName, data) => csv.stringifyAsync(data, { header: true })
+  .then(txt => fs.writeFileAsync(`${__dirname}/${fileName}`, txt));
 
 const generateCsvs = (users) => {
-
   // export 1: All users with their id, username, balance, the date at which they
   // received Briqs for the last time, the date at which they gave Briqs for the last time
   const export1 = writeCsv('export1.csv', Object.keys(users).reduce((result, userId) => {
     const user = users[userId];
     const { id, username, balance } = user.user;
     const { lastReceive, lastGive } = user.meta;
-    result.push({ id, username, balance, lastReceive, lastGive });
+    result.push({
+      id, username, balance, lastReceive, lastGive,
+    });
     return result;
   }, []));
 
@@ -90,7 +89,9 @@ const generateCsvs = (users) => {
     const user = users[userId];
     const { id, username, balance } = user.user;
     const { totalReceived, totalGiven } = user.meta;
-    result.push({ id, username, balance, totalReceived, totalGiven });
+    result.push({
+      id, username, balance, totalReceived, totalGiven,
+    });
     return result;
   }, []));
 
@@ -100,19 +101,19 @@ const generateCsvs = (users) => {
     const user = users[userId];
     const { id, username } = user.user;
     const { lastReceive } = user.meta;
-    if (lastReceive > twoDaysago){
+    if (lastReceive > twoDaysago) {
       result.push({ id, username, lastReceive });
     }
     return result;
   }, []));
 
-  // export 4: All users (id, username) who gave more than 5 Briqs in one transaction, 
+  // export 4: All users (id, username) who gave more than 5 Briqs in one transaction,
   // and the highest number of Briqs they gave
   const export4 = writeCsv('export4.csv', Object.keys(users).reduce((result, userId) => {
     const user = users[userId];
     const { id, username } = user.user;
     const { highestAmount } = user.meta;
-    if (highestAmount > 5){
+    if (highestAmount > 5) {
       result.push({ id, username, highestAmount });
     }
     return result;
@@ -122,14 +123,15 @@ const generateCsvs = (users) => {
     export1,
     export2,
     export3,
-    export4
+    export4,
   ]);
-}
+};
 
 let users;
 generateUsers(100)
-  .then(newUsers => {
+  .then((newUsers) => {
     users = newUsers.reduce((us, u) => {
+      // eslint-disable-next-line no-param-reassign
       us[u.id] = { user: u, meta: { totalGiven: 0, totalReceived: 0, highestAmount: 0 } };
       return us;
     }, {});
@@ -137,7 +139,7 @@ generateUsers(100)
   })
   .then(() => generateCsvs(users))
   .then(() => process.exit(0))
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   });

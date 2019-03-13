@@ -27,7 +27,6 @@ const randomUserFrom = (users) => {
   return user;
 };
 
-
 const randomUserTo = (users, userFrom) => {
   const userIds = Object.keys(users);
   let user;
@@ -67,8 +66,10 @@ const createTransactions = (users, days, transactionsPerDay) => {
   return Promise.all(createTransactionsPromises);
 };
 
-const writeCsv = (fileName, data) => csv.stringifyAsync(data, { header: true })
-  .then(txt => fs.writeFileAsync(`${__dirname}/${fileName}`, txt));
+const writeCsv = async (fileName, data) => {
+  const txt = await csv.stringifyAsync(data, { header: true });
+  return fs.writeFileAsync(`${__dirname}/${fileName}`, txt);
+};
 
 const generateCsvs = (users) => {
   // export 1: All users with their id, username, balance, the date at which they
@@ -127,19 +128,21 @@ const generateCsvs = (users) => {
   ]);
 };
 
-let users;
-generateUsers(100)
-  .then((newUsers) => {
-    users = newUsers.reduce((us, u) => {
+async function random() {
+  try {
+    const newUsers = await generateUsers(100);
+    const users = newUsers.reduce((us, u) => {
       // eslint-disable-next-line no-param-reassign
       us[u.id] = { user: u, meta: { totalGiven: 0, totalReceived: 0, highestAmount: 0 } };
       return us;
     }, {});
-    return createTransactions(users, 30, 40);
-  })
-  .then(() => generateCsvs(users))
-  .then(() => process.exit(0))
-  .catch((e) => {
+    await createTransactions(users, 30, 40);
+    await generateCsvs(users);
+    process.exit(0);
+  } catch (e) {
     console.error(e);
     process.exit(1);
-  });
+  }
+}
+
+random();

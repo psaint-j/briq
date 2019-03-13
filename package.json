@@ -5,8 +5,9 @@
   "scripts": {
     "lint": "eslint .",
     "populate": "node test/setupDb.js && node test/random.js",
+    "pretest": "NODE_ENV=test node test/setupDb.js",
     "start": "node ./bin/www",
-    "test": "NODE_ENV=test node test/setupDb.js && jest"
+    "test": "jest"
   },
   "dependencies": {
     "bluebird": "^3.5.3",

@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('user', {
     id: {
@@ -18,11 +16,15 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  User.prototype.give = function give(amount, userTo, options = {}) {
-    const tx = _.defaults({ amount, userToId: userTo.id }, options);
-    return this.createDebit(tx)
-      .then(() => this.decrement({ balance: amount }))
-      .then(() => userTo.increment({ balance: amount }));
+  User.prototype.give = async function give(amount, userTo, options = {}) {
+    const tx = {
+      amount,
+      userToId: userTo.id,
+      ...options,
+    };
+    await this.createDebit(tx);
+    await this.decrement({ balance: amount });
+    await userTo.increment({ balance: amount });
   };
 
   User.associate = function associate(models) {

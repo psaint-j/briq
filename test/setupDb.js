@@ -1,4 +1,9 @@
 #!/bin/node
 const { sequelize } = require('../models');
 
-sequelize.sync({ force: true }).then(() => { process.exit(0); });
+const setupDb = async () => {
+  await sequelize.sync({ force: true });
+  process.exit(0);
+};
+
+setupDb();

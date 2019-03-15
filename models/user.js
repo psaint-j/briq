@@ -22,6 +22,8 @@ module.exports = (sequelize, DataTypes) => {
       userToId: userTo.id,
       ...options,
     };
+    if (amount > this.balance)
+      return Promise.reject(new Error('out of balance'));
     await this.createDebit(tx);
     await this.decrement({ balance: amount });
     await userTo.increment({ balance: amount });

@@ -56,8 +56,6 @@ class UserPage extends Component {
   render(){
     const { match } = this.props;
     const { data, username, balance } = this.state;
-    console.log('data', data);
-    console.log('===', !!data.lenght);
     if (!!data.lenght){
       return <div>Chargement..</div>
     }

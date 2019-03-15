@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Header, Image, Table, Button } from 'semantic-ui-react';
+import { Header, Table, Button } from 'semantic-ui-react';
 import moment from 'moment';
 import axios from 'axios';
 
@@ -50,9 +50,6 @@ export default class ListPage extends Component {
 
   render(){
     const { data } = this.state
-
-    console.log('data', data);
-    console.log('===', !!data.lenght);
     if (!!data.lenght){
       return <div>Chargement..</div>
     }
@@ -93,5 +90,3 @@ export default class ListPage extends Component {
     )
   }
 }
-
-// <Image src='/images/avatar/small/lena.png' rounded size='mini' />
